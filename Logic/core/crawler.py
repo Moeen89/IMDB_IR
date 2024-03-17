@@ -653,7 +653,7 @@ class IMDbCrawler:
 
 
 def main():
-    imdb_crawler = IMDbCrawler(crawling_threshold=250)
+    imdb_crawler = IMDbCrawler(crawling_threshold=10)
     imdb_crawler.read_from_file_as_json()
     imdb_crawler.start_crawling()
     print("writing on file")
