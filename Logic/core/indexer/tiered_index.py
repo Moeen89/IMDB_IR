@@ -1,5 +1,5 @@
-from .indexes_enum import Indexes, Index_types
-from .index_reader import Index_reader
+from Logic.core.indexer.indexes_enum import Indexes, Index_types
+from Logic.core.indexer.index_reader import Index_reader
 import json
 
 
@@ -61,7 +61,21 @@ class Tiered_index:
         first_tier = {}
         second_tier = {}
         third_tier = {}
-        #TODO
+        for word,pl in current_index.items():
+            for id, tf in pl.items():
+                if tf >= first_tier_threshold:
+                    if word not in first_tier:
+                        first_tier[word] = {}
+                    first_tier[word][id] = tf
+                elif tf >= second_tier_threshold:
+                    if word not in second_tier:
+                        second_tier[word] = {}
+                    second_tier[word][id] = tf
+                else:
+                    if word not in third_tier:
+                        third_tier[word] = {}
+                    third_tier[word][id] = tf
+        
         return {
             "first_tier": first_tier,
             "second_tier": second_tier,

@@ -2,6 +2,7 @@ import time
 import os
 import json
 import copy
+from Logic.core.preprocess import Preprocessor
 from indexes_enum import Indexes
 
 
@@ -32,8 +33,8 @@ class Index:
         """
 
         current_index = {}
-        #         TODO
-
+        for document in self.preprocessed_documents:
+            current_index[document['id']] = document
         return current_index
 
     def index_stars(self):
@@ -47,8 +48,19 @@ class Index:
             So the index type is: {term: {document_id: tf}}
         """
 
-        #         TODO
-        pass
+        
+        current_index = {}
+        for document in self.preprocessed_documents:
+            stars = document['stars']
+            if stars is None:
+                continue
+            for star in stars:
+                if star not in current_index:
+                    current_index[star] = {}
+                if document['id'] not in current_index[star]:
+                    current_index[star][document['id']] = 0
+                current_index[star][document['id']] += 1
+        return current_index
 
     def index_genres(self):
         """
@@ -61,8 +73,18 @@ class Index:
             So the index type is: {term: {document_id: tf}}
         """
 
-        #         TODO
-        pass
+        current_index = {}
+        for document in self.preprocessed_documents:
+            genres = document['genres']
+            if genres is None:
+                continue
+            for genre in genres:
+                if genre not in current_index:
+                    current_index[genre] = {}
+                if document['id'] not in current_index[genre]:
+                    current_index[genre][document['id']] = 0
+                current_index[genre][document['id']] += 1
+        return current_index
 
     def index_summaries(self):
         """
@@ -76,8 +98,19 @@ class Index:
         """
 
         current_index = {}
-        #         TODO
+        for document in self.preprocessed_documents:
+            summaries = document['summaries']
+            if summaries is None:
+                continue
+            for summary in summaries:
+                for word in summary.split():
+                    if word not in current_index:
+                        current_index[word] = {}
+                    if document['id'] not in current_index[word]:
+                        current_index[word][document['id']] = 0
+                    current_index[word][document['id']] += 1    
 
+                
         return current_index
 
     def get_posting_list(self, word: str, index_type: str):
@@ -98,8 +131,8 @@ class Index:
         """
 
         try:
-            #         TODO
-            pass
+            current_index = self.index[index_type]
+            return list(current_index[word].keys())
         except:
             return []
 
@@ -113,8 +146,28 @@ class Index:
             Document to add to all the indexes
         """
 
-        #         TODO
-        pass
+        self.preprocessed_documents.append(document)
+        self.index[Indexes.DOCUMENTS.value][document['id']] = document
+        for star in document['stars']:
+            if star not in self.index[Indexes.STARS.value]:
+                self.index[Indexes.STARS.value][star] = {}
+            if document['id'] not in self.index[Indexes.STARS.value][star]:
+                self.index[Indexes.STARS.value][star][document['id']] = 0
+            self.index[Indexes.STARS.value][star][document['id']] += 1
+
+        for genre in document['genres']:
+            if genre not in self.index[Indexes.GENRES.value]:
+                self.index[Indexes.GENRES.value][genre] = {}
+            if document['id'] not in self.index[Indexes.GENRES.value][genre]:
+                self.index[Indexes.GENRES.value][genre][document['id']] = 0
+            self.index[Indexes.GENRES.value][genre][document['id']] += 1
+
+        for summary in document['summaries']:
+            if summary not in self.index[Indexes.SUMMARIES.value]:
+                self.index[Indexes.SUMMARIES.value][summary] = {}
+            if document['id'] not in self.index[Indexes.SUMMARIES.value][summary]:
+                self.index[Indexes.SUMMARIES.value][summary][document['id']] = 0
+            self.index[Indexes.SUMMARIES.value][summary][document['id']] += 1
 
     def remove_document_from_index(self, document_id: str):
         """
@@ -125,9 +178,17 @@ class Index:
         document_id : str
             ID of the document to remove from all the indexes
         """
-
-        #         TODO
-        pass
+        if document_id in self.index[Indexes.DOCUMENTS.value]:
+            del self.index[Indexes.DOCUMENTS.value][document_id]
+        for star in self.index[Indexes.STARS.value]:
+            if document_id in self.index[Indexes.STARS.value][star]:
+                del self.index[Indexes.STARS.value][star][document_id]
+        for genre in self.index[Indexes.GENRES.value]:
+            if document_id in self.index[Indexes.GENRES.value][genre]:
+                del self.index[Indexes.GENRES.value][genre][document_id]
+        for summary in self.index[Indexes.SUMMARIES.value]:
+            if document_id in self.index[Indexes.SUMMARIES.value][summary]:
+                del self.index[Indexes.SUMMARIES.value][summary][document_id]
 
     def check_add_remove_is_correct(self):
         """
@@ -149,26 +210,31 @@ class Index:
             print('Add is incorrect, document')
             return
 
-        if (set(index_after_add[Indexes.STARS.value]['tim']).difference(set(index_before_add[Indexes.STARS.value]['tim']))
+        if (set(index_after_add[Indexes.STARS.value]['tim']).difference(
+                set(index_before_add[Indexes.STARS.value]['tim']))
                 != {dummy_document['id']}):
             print('Add is incorrect, tim')
             return
 
-        if (set(index_after_add[Indexes.STARS.value]['henry']).difference(set(index_before_add[Indexes.STARS.value]['henry']))
+        if (set(index_after_add[Indexes.STARS.value]['henry']).difference(
+                set(index_before_add[Indexes.STARS.value]['henry']))
                 != {dummy_document['id']}):
             print('Add is incorrect, henry')
             return
-        if (set(index_after_add[Indexes.GENRES.value]['drama']).difference(set(index_before_add[Indexes.GENRES.value]['drama']))
+        if (set(index_after_add[Indexes.GENRES.value]['drama']).difference(
+                set(index_before_add[Indexes.GENRES.value]['drama']))
                 != {dummy_document['id']}):
             print('Add is incorrect, drama')
             return
 
-        if (set(index_after_add[Indexes.GENRES.value]['crime']).difference(set(index_before_add[Indexes.GENRES.value]['crime']))
+        if (set(index_after_add[Indexes.GENRES.value]['crime']).difference(
+                set(index_before_add[Indexes.GENRES.value]['crime']))
                 != {dummy_document['id']}):
             print('Add is incorrect, crime')
             return
 
-        if (set(index_after_add[Indexes.SUMMARIES.value]['good']).difference(set(index_before_add[Indexes.SUMMARIES.value]['good']))
+        if (set(index_after_add[Indexes.SUMMARIES.value]['good']).difference(
+                set(index_before_add[Indexes.SUMMARIES.value]['good']))
                 != {dummy_document['id']}):
             print('Add is incorrect, good')
             return
@@ -201,8 +267,9 @@ class Index:
         if index_name not in self.index:
             raise ValueError('Invalid index name')
 
-        # TODO
-        pass
+        json_object = json.dumps(self.index[index_name])
+        with open(path, 'w') as f:
+            f.write(json_object)
 
     def load_index(self, path: str):
         """
@@ -214,8 +281,9 @@ class Index:
             Path to load the file
         """
 
-        #         TODO
-        pass
+        with open(path, 'r') as f:
+            loaded_index = json.load(f)
+        self.index[path[6:-11]] = loaded_index
 
     def check_if_index_loaded_correctly(self, index_type: str, loaded_index: dict):
         """
@@ -287,7 +355,7 @@ class Index:
         if set(docs).issubset(set(posting_list)):
             print('Indexing is correct')
 
-            if implemented_time < brute_force_time:
+            if implemented_time <= brute_force_time:
                 print('Indexing is good')
                 return True
             else:
@@ -297,4 +365,22 @@ class Index:
             print('Indexing is wrong')
             return False
 
+
 # TODO: Run the class with needed parameters, then run check methods and finally report the results of check methods
+with open('../IMDB_crawled.json', 'r') as f:
+    json_data = f.read()
+crawled_movies = json.loads(json_data)
+for movie in crawled_movies:
+    movie['summaries'] = Preprocessor(movie['summaries']).preprocess()
+index = Index(crawled_movies)
+for item in ['documents', 'stars', 'genres', 'summaries']:
+    print(item, ": ")
+    index.check_if_indexing_is_good(item)
+for item in ['documents', 'stars', 'genres', 'summaries']:
+    path = 'index/' + item + '_index.json'
+    index.store_index(path, item)
+
+for item in ['documents', 'stars', 'genres', 'summaries']:
+    path = 'index/' + item + '_index.json'
+    index.load_index(path)
+    print(index.check_if_index_loaded_correctly(item, index.index[item]))

@@ -26,6 +26,8 @@ class Preprocessor:
             The preprocessed documents.
         """
         preprocessed_documents = []
+        if self.documents is None:
+            return self.documents
         for document in self.documents:
             document = self.remove_links(document)
             document = self.remove_punctuations(document)
@@ -124,8 +126,7 @@ class Preprocessor:
         list
             The list of words with stopwords removed.
         """
-        with open('stopwords.txt', 'r') as f:
-            self.stopwords = set(f.read().split())
+        self.stopwords = ['this', 'that', 'about', 'whom', 'being', 'where', 'why', 'had', 'should', 'each']
         for stopword in self.stopwords:
             text = re.sub(r'\b' + stopword + r'\b', '', text)
         return text    
