@@ -65,7 +65,7 @@ class Scorer:
         """
         idf = self.idf.get(term, None)
         if idf is None:
-            # TODO
+            df = len(self.index.get(term, {}))
             pass
         return idf
     

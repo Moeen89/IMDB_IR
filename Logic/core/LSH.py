@@ -39,7 +39,7 @@ class MinHashLSH:
         shingles = None
         words = document.split()
         shingles = set()
-        for i in range(len(words) - 1):
+        for i in range(len(words) - k+1):
             shingle = ''
             for j in range(k):
                 shingle += words[i + j]
@@ -61,7 +61,7 @@ class MinHashLSH:
         for doc in self.documents:
             shingles_doc.append(self.shingle_document(doc))
         self.shingles = list(set.union(*shingles_doc))
-        characteristic_matrix = np.ndarray(shape=(len(self.shingles),len(self.documents)),dtype=np.short)
+        characteristic_matrix = np.ndarray(shape=(len(self.shingles),len(self.documents)),dtype=np.int8)
         for i in range(len(self.documents)):
             for j in range(len(self.shingles)):
                 if self.shingles[j] in shingles_doc[i]:
@@ -80,7 +80,7 @@ class MinHashLSH:
         numpy.ndarray
             The Min-Hash signatures matrix.
         """
-        sketch_len = 100
+        sketch_len = self.num_hashes
         hash_vals = [random.randint(0, 999999) for i in range(sketch_len)]
         min_hash = np.ndarray(shape=(sketch_len,len(self.documents)), dtype=np.int64)
         for i in range(len(self.documents)):
@@ -93,7 +93,7 @@ class MinHashLSH:
             
         
 
-    def lsh_buckets(self, signature, bands=10, rows_per_band=10):
+    def lsh_buckets(self, signature, bands=200, rows_per_band=5):
         """
         Group documents into Locality-Sensitive Hashing (LSH) buckets based on Min-Hash signatures.
 
@@ -112,7 +112,7 @@ class MinHashLSH:
             A dictionary mapping bucket IDs to lists of document indices.
         """
         buckets = {}
-        for i in range(signature.shape[0] // bands):
+        for i in range(bands):
             start_row = i * signature.shape[0] // bands
             end_row = start_row + rows_per_band
             for j in range(signature.shape[1]):
@@ -210,26 +210,26 @@ class MinHashLSH:
         # a good score is around 0.8
         print("your final score in near duplicate detection:", correct_near_duplicates / all_near_duplicates)
 
-
-
-with open('LSHFakeData.json', 'r') as f:
-    json_data = f.read()
-fake_movies = json.loads(json_data)
 documents = []
-for fake_movie in fake_movies:
-    combined_summary = ''
-    for summary in fake_movie['summaries']:
-        combined_summary += summary + ' '
-    documents.append(combined_summary.strip())
+
 with open('./IMDB_crawled.json', 'r') as f:
-    json_data = f.read()
-crawled_movies = json.loads(json_data)
-for crawled_movie in crawled_movies:
-    combined_summary = ''
-    if crawled_movie['summaries'] == None:
+    crawled_json = f.read()
+crawled = json.loads(crawled_json)
+for movie in crawled:
+    sums = ''
+    if movie['summaries'] == None:
         continue
-    for summary in crawled_movie['summaries']:
-        combined_summary += summary + ' '
-    documents.append(combined_summary.strip())
-minhash = MinHashLSH(documents, 100)
+    for summary in movie['summaries']:
+        sums += summary + ' '
+    documents.append(sums.strip())
+with open('LSHFakeData.json', 'r') as f:
+    dups = f.read()
+lsh_fake = json.loads(dups)
+for movie in lsh_fake:
+    sums = ''
+    for summary in movie['summaries']:
+        sums += summary + ' '
+    documents.append(sums.strip())
+
+minhash = MinHashLSH(documents, 2000)
 minhash.perform_lsh()      

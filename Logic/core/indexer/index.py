@@ -48,7 +48,6 @@ class Index:
             So the index type is: {term: {document_id: tf}}
         """
 
-        
         current_index = {}
         for document in self.preprocessed_documents:
             stars = document['stars']

@@ -28,7 +28,8 @@ class SpellCorrection:
         """
         shingles = set()
         
-        # TODO: Create shingle here
+        for i in range(len(word) - k + 1):
+            shingles.add(word[i:i+k])
 
         return shingles
     
@@ -48,10 +49,11 @@ class SpellCorrection:
         float
             Jaccard score.
         """
-
-        # TODO: Calculate jaccard score here.
-
-        return
+        union = len(first_set.union(second_set))
+        if union == 0:
+            return 0
+        intersection = len(first_set.intersection(second_set))
+        return intersection / union
 
     def shingling_and_counting(self, all_documents):
         """
@@ -72,7 +74,14 @@ class SpellCorrection:
         all_shingled_words = dict()
         word_counter = dict()
 
-        # TODO: Create shingled words dictionary and word counter dictionary here.
+        for document in all_documents:
+            for word in document.split():
+                if word not in all_shingled_words:
+                    all_shingled_words[word] = self.shingle_word(word)
+                if word not in word_counter:
+                    word_counter[word] = 0
+                word_counter[word] += 1
+
                 
         return all_shingled_words, word_counter
     
@@ -92,9 +101,11 @@ class SpellCorrection:
         """
         top5_candidates = list()
 
-        # TODO: Find 5 nearest candidates here.
-
-        return top5_candidates
+        for candidate in self.all_shingled_words:
+            jaccard = self.jaccard_score(self.shingle_word(word), self.all_shingled_words[candidate])
+            top5_candidates.append((candidate, jaccard))
+        top5_candidates.sort(reverse=True)    
+        return top5_candidates[0:5]
     
     def spell_check(self, query):
         """
@@ -112,6 +123,12 @@ class SpellCorrection:
         """
         final_result = ""
         
+        for word in query.split():
+            if word in self.all_shingled_words:
+                final_result += word + " "
+            else:
+                top5_candidates = self.find_nearest_words(word)
+                final_result += top5_candidates[0][0] + " "
         # TODO: Do spell correction here.
 
         return final_result
