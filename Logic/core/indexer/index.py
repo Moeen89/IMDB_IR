@@ -370,7 +370,9 @@ with open('../IMDB_crawled.json', 'r') as f:
     json_data = f.read()
 crawled_movies = json.loads(json_data)
 for movie in crawled_movies:
-    movie['summaries'] = Preprocessor(movie['summaries']).preprocess()
+    for item in ['stars', 'genres', 'summaries']:
+        movie[item] = Preprocessor(movie[item]).preprocess()
+
 index = Index(crawled_movies)
 for item in ['documents', 'stars', 'genres', 'summaries']:
     print(item, ": ")
