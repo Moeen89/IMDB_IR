@@ -44,15 +44,14 @@ def search_time(start, end):
 
 
 def search_handling(
-    search_button,
-    search_term,
-    search_max_num,
-    search_weights,
-    search_method,
+        search_button,
+        search_term,
+        search_max_num,
+        search_weights,
+        search_method,
 ):
     if search_button:
         corrected_query = utils.correct_text(search_term, utils.movies_dataset)
-
         if corrected_query != search_term:
             st.warning(f"Your search terms were corrected to: {corrected_query}")
             search_term = corrected_query

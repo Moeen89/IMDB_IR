@@ -1,18 +1,18 @@
 import json
 import numpy as np
-from .preprocess import Preprocessor
-from .scorer import Scorer
-from .indexes_enum import Indexes, Index_types
-from .index_reader import Index_reader
+from Logic.core.preprocess import Preprocessor
+from Logic.core.scorer import Scorer
+from Logic.core.indexer.indexes_enum import Indexes, Index_types
+from Logic.core.indexer.index_reader import Index_reader
 
 
 class SearchEngine:
-    def __init__(self):
+    def __init__(self, path):
         """
         Initializes the search engine.
 
         """
-        path = '/index'
+
         self.document_indexes = {
             Indexes.STARS: Index_reader(path, Indexes.STARS),
             Indexes.GENRES: Index_reader(path, Indexes.GENRES),
@@ -30,7 +30,7 @@ class SearchEngine:
         }
         self.metadata_index = Index_reader(path, Indexes.DOCUMENTS, Index_types.METADATA)
 
-    def search(self, query, method, weights, safe_ranking = True, max_results=10):
+    def search(self, query, method, weights, safe_ranking=True, max_results=10):
         """
         searches for the query in the indexes.
 
@@ -66,7 +66,7 @@ class SearchEngine:
         final_scores = {}
 
         self.aggregate_scores(weights, scores, final_scores)
-        
+
         result = sorted(final_scores.items(), key=lambda x: x[1], reverse=True)
         if max_results is not None:
             result = result[:max_results]
@@ -86,8 +86,12 @@ class SearchEngine:
         final_scores : dict
             The final scores of the documents.
         """
-        # TODO
-        pass
+        for w in weights.keys():
+            for id, score in scores[w].items():
+                if id in final_scores:
+                    final_scores[id] += weights[w] * score
+                else:
+                    final_scores[id] = weights[w] * score
 
     def find_scores_with_unsafe_ranking(self, query, method, weights, max_results, scores):
         """
@@ -108,8 +112,16 @@ class SearchEngine:
         """
         for field in weights:
             for tier in ["first_tier", "second_tier", "third_tier"]:
-                #TODO
-                pass
+                document_length_index = self.document_lengths_index[field].index
+                scorer = Scorer(self.tiered_index[field].index[tier], self.metadata_index.index['document_count'])
+                if method == 'OkapiBM25':
+                    average_length = self.metadata_index.index['averge_document_length'][field.value]
+                    score = scorer.compute_socres_with_okapi_bm25(query, average_length, document_length_index)
+                else:
+                    score = scorer.compute_scores_with_vector_space_model(query, method)
+                scores[field] = self.merge_scores(scores[field], score)
+                if len(scores[field]) >= max_results:
+                    break
 
     def find_scores_with_safe_ranking(self, query, method, weights, scores):
         """
@@ -128,8 +140,14 @@ class SearchEngine:
         """
 
         for field in weights:
-            #TODO
-            pass
+            document_length_index = self.document_lengths_index[field].index
+            scorer = Scorer(self.document_indexes[field].index, self.metadata_index.index['document_count'])
+            if method == 'OkapiBM25':
+                average_length = self.metadata_index.index['averge_document_length'][field.value]
+                score = scorer.compute_socres_with_okapi_bm25(query, average_length, document_length_index)
+            else:
+                score = scorer.compute_scores_with_vector_space_model(query, method)
+            scores[field] = score
 
     def merge_scores(self, scores1, scores2):
         """
@@ -147,12 +165,20 @@ class SearchEngine:
         dict
             The merged dictionary of scores.
         """
-
-        #TODO
+        merge = {}
+        for i, score in scores1.items():
+            if i not in merge:
+                merge[i] = 0
+            merge[i] += score
+        for i, score in scores2.items():
+            if i not in merge:
+                merge[i] = 0
+            merge[i] += score
+        return merge
 
 
 if __name__ == '__main__':
-    search_engine = SearchEngine()
+    search_engine = SearchEngine(path='./indexer/index/')
     query = "spider man in wonderland"
     method = "lnc.ltc"
     weights = {

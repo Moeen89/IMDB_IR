@@ -1,12 +1,15 @@
 from typing import Dict, List
-from core.search import SearchEngine
-from core.spell_correction import SpellCorrection
-from core.snippet import Snippet
-from core.indexes_enum import Indexes, Index_types
+from Logic.core.search import SearchEngine
+from Logic.core.spell_correction import SpellCorrection
+from Logic.core.snippet import Snippet
+from Logic.core.indexer.indexes_enum import Indexes, Index_types
 import json
 
-movies_dataset = None  # TODO
-search_engine = SearchEngine()
+path = '../Logic/core/indexer/index/documents_index.json'
+with open(path, 'r') as f:
+    movies = f.read()
+movies_dataset = json.loads(movies)
+search_engine = SearchEngine("../Logic/core/indexer/index/")
 
 
 def correct_text(text: str, all_documents: List[str]) -> str:
@@ -24,7 +27,6 @@ def correct_text(text: str, all_documents: List[str]) -> str:
     str
         The corrected form of the given text
     """
-    # TODO: You can add any preprocessing steps here, if needed!
     spell_correction_obj = SpellCorrection(all_documents)
     text = spell_correction_obj.spell_check(text)
     return text
@@ -61,7 +63,11 @@ def search(
     list
     Retrieved documents with snippet
     """
-    weights = ...  # TODO
+    weights = {
+        Indexes.STARS: weights[0],
+        Indexes.GENRES: weights[1],
+        Indexes.SUMMARIES: weights[2],
+    }
     return search_engine.search(
         query, method, weights, max_results=max_result_count, safe_ranking=True
     )

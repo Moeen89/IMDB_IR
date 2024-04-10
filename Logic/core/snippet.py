@@ -25,10 +25,9 @@ class Snippet:
             The query without stop words.
         """
         stop_words = ['this', 'that', 'about', 'whom', 'being', 'where', 'why', 'had', 'should', 'each']
-        for word in query.split():
-            if word in stop_words:
-                query = query.replace(word, "")
-        return
+        for stop_word in stop_words:
+            query = query.replace(stop_word, "")
+        return query
 
     def find_snippet(self, doc, query):
         """
@@ -50,22 +49,34 @@ class Snippet:
             Words in the query which don't exist in the doc.
         """
         final_snippet = ""
-        not_exist_words = []
 
         query = self.remove_stop_words_from_query(query)
+        if query is None:
+            return "", []
         words = doc.split()
-        query_words = query.split()
+        query_words = list(set(query.split()))
+        not_exist_words = list(set(query_words).difference(set(words)))
+        locations = []
         for i in range(len(words)):
             if words[i] in query_words:
-                final_snippet += "***" + words[i] + "*** "
-                for j in range(1, self.number_of_words_on_each_side + 1):
-                    if i - j >= 0:
-                        final_snippet = words[i - j] + " " + final_snippet
-                    if i + j < len(words):
-                        final_snippet = final_snippet + " " + words[i + j]
-                final_snippet = final_snippet.strip()
-                final_snippet += "..."
-                break
+                locations.append(i)
+        last_end = 0
+        for location in locations:
+            start = location - self.number_of_words_on_each_side
+            end = location + self.number_of_words_on_each_side
+            if start < 0:
+                start = 0
+            if end > len(words):
+                end = len(words)
+            if last_end > start:
+                start = last_end
 
+            snippet = " ".join(words[start:end])
+
+            snippet = snippet.replace(words[location], "***" + words[location] + "***", )
+            if last_end + 1 < start:
+                snippet = "... " + snippet
+            final_snippet += snippet + " "
+            last_end = end
 
         return final_snippet, not_exist_words
