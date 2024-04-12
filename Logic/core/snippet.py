@@ -73,10 +73,14 @@ class Snippet:
 
             snippet = " ".join(words[start:end])
 
-            snippet = snippet.replace(words[location], "***" + words[location] + "***", )
             if last_end + 1 < start:
-                snippet = "... " + snippet
+                if len(final_snippet) > 0:
+                    snippet = "... " + snippet
             final_snippet += snippet + " "
-            last_end = end
 
-        return final_snippet, not_exist_words
+            last_end = end
+        for query_word in query_words:
+            final_snippet = final_snippet.replace(query_word, "***" + query_word + "***", )
+            final_snippet = final_snippet.replace(query_word.capitalize(), "***" + query_word.capitalize() + "***", )
+
+        return final_snippet.lower(), not_exist_words

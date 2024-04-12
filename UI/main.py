@@ -26,6 +26,7 @@ class color(Enum):
 def get_summary_with_snippet(movie_info, query):
     summary = movie_info["first_page_summary"]
     snippet, not_exist_words = snippet_obj.find_snippet(summary, query)
+    print(snippet)
     if "***" in snippet:
         snippet = snippet.split()
         for i in range(len(snippet)):
@@ -93,6 +94,7 @@ def search_handling(
 
                 with st.container():
                     st.markdown("**Stars:**")
+
                     num_authors = len(info["stars"])
                     stars = "".join(star + ", " for star in info["stars"])
                     st.text(stars[:-2])
