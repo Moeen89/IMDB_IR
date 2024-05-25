@@ -31,14 +31,14 @@ class Scorer:
         -------
         list
             A list of documents that contain at least one of the terms in the query.
-        
+
         Note
         ---------
             The current approach is not optimal but we use it due to the indexing structure of the dict we're using.
             If we had pairs of (document_id, tf) sorted by document_id, we could improve this.
                 We could initialize a list of pointers, each pointing to the first element of each list.
                 Then, we could iterate through the lists in parallel.
-            
+
         """
         list_of_documents = []
         for term in query:
@@ -59,7 +59,7 @@ class Scorer:
         -------
         float
             The inverse document frequency of the term.
-        
+
         Note
         -------
             It was better to store dfs in a separate dict in preprocessing.
@@ -119,7 +119,9 @@ class Scorer:
             scores[document] = self.get_vector_space_model_score(query, tf_query, document, method[:3], method[4:])
         return scores
 
-    def get_vector_space_model_score(self, query, query_tfs, document_id, document_method, query_method):
+    def get_vector_space_model_score(
+        self, query, query_tfs, document_id, document_method, query_method
+    ):
         """
         Returns the Vector Space Model score of a document for a query.
 
@@ -172,7 +174,9 @@ class Scorer:
 
         return np.dot(np.array(query_vector), np.array(document_vector))
 
-    def compute_socres_with_okapi_bm25(self, query, average_document_field_length, document_lengths):
+    def compute_socres_with_okapi_bm25(
+        self, query, average_document_field_length, document_lengths
+    ):
         """
         compute scores with okapi bm25
 
@@ -198,7 +202,9 @@ class Scorer:
                                                          document_lengths)
         return scores
 
-    def get_okapi_bm25_score(self, query, document_id, average_document_field_length, document_lengths):
+    def get_okapi_bm25_score(
+        self, query, document_id, average_document_field_length, document_lengths
+    ):
         """
         Returns the Okapi BM25 score of a document for a query.
 
@@ -230,4 +236,86 @@ class Scorer:
                 document_length = document_lengths[document_id]
                 score += idf * (
                         (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * document_length / average_document_field_length)))
+        return score
+
+        
+
+    def compute_scores_with_unigram_model(
+        self, query, smoothing_method, document_lengths=None, alpha=0.5, lamda=0.5
+    ):
+        """
+        Calculates the scores for each document based on the unigram model.
+
+        Parameters
+        ----------
+        query : str
+            The query to search for.
+        smoothing_method : str (bayes | naive | mixture)
+            The method used for smoothing the probabilities in the unigram model.
+        document_lengths : dict
+            A dictionary of the document lengths. The keys are the document IDs, and the values are
+            the document's length in that field.
+        alpha : float, optional
+            The parameter used in bayesian smoothing method. Defaults to 0.5.
+        lamda : float, optional
+            The parameter used in some smoothing methods to balance between the document
+            probability and the collection probability. Defaults to 0.5.
+
+        Returns
+        -------
+        float
+            A dictionary of the document IDs and their scores.
+        """
+        
+        scores = {}
+        documents = self.get_list_of_documents(query)
+        for term in query:
+            if term not in self.index:
+                return scores
+        for document in documents:
+            scores[document] = self.compute_score_with_unigram_model(query, document, smoothing_method, document_lengths,
+                                                                    alpha, lamda)
+        return scores
+
+       
+
+    def compute_score_with_unigram_model(
+        self, query, document_id, smoothing_method, document_lengths, alpha, lamda
+    ):
+        """
+        Calculates the scores for each document based on the unigram model.
+
+        Parameters
+        ----------
+        query : str
+            The query to search for.
+        document_id : str
+            The document to calculate the score for.
+        smoothing_method : str (bayes | naive | mixture)
+            The method used for smoothing the probabilities in the unigram model.
+        document_lengths : dict
+            A dictionary of the document lengths. The keys are the document IDs, and the values are
+            the document's length in that field.
+        alpha : float, optional
+            The parameter used in bayesian smoothing method. Defaults to 0.5.
+        lamda : float, optional
+            The parameter used in some smoothing methods to balance between the document
+            probability and the collection probability. Defaults to 0.5.
+
+        Returns
+        -------
+        float
+            The Unigram score of the document for the query.
+        """
+        score = 0
+        for term in query:
+            collection_tf = sum(self.index[term].values())
+            collection_prob = collection_tf / len(self.get_list_of_documents(query))
+            tf = self.index[term].get(document_id, 0)
+            if smoothing_method == 'bayes':
+                score += np.log((tf + alpha * collection_prob) / (document_lengths[document_id] + alpha))
+            elif smoothing_method == 'naive':
+                score += np.log((tf + 1) / (document_lengths[document_id] + len(self.index)))
+            elif smoothing_method == 'mixture':
+                score += np.log(lamda * (tf / document_lengths[document_id]) + (1 - lamda) * collection_prob)
         return score

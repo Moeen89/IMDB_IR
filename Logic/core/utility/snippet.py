@@ -1,3 +1,6 @@
+import re
+
+
 class Snippet:
     def __init__(self, number_of_words_on_each_side=5):
         """
@@ -80,7 +83,9 @@ class Snippet:
 
             last_end = end
         for query_word in query_words:
-            final_snippet = final_snippet.replace(query_word, "***" + query_word + "***", )
-            final_snippet = final_snippet.replace(query_word.capitalize(), "***" + query_word.capitalize() + "***", )
+            pattern = r'\b(?:' + re.escape(query_word) + r')\b'
+            final_snippet = re.sub(pattern, "***" + query_word + "***", final_snippet)
+            pattern = r'\b(?:' + re.escape(query_word.capitalize()) + r')\b'
+            final_snippet = re.sub(pattern, "***" + query_word + "***", final_snippet)
 
         return final_snippet.lower(), not_exist_words

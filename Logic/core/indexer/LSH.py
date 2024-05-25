@@ -210,26 +210,26 @@ class MinHashLSH:
         # a good score is around 0.8
         print("your final score in near duplicate detection:", correct_near_duplicates / all_near_duplicates)
 
-documents = []
-
-with open('./IMDB_crawled.json', 'r') as f:
-    crawled_json = f.read()
-crawled = json.loads(crawled_json)
-for movie in crawled:
-    sums = ''
-    if movie['summaries'] == None:
-        continue
-    for summary in movie['summaries']:
-        sums += summary + ' '
-    documents.append(sums.strip())
-with open('LSHFakeData.json', 'r') as f:
-    dups = f.read()
-lsh_fake = json.loads(dups)
-for movie in lsh_fake:
-    sums = ''
-    for summary in movie['summaries']:
-        sums += summary + ' '
-    documents.append(sums.strip())
-
-minhash = MinHashLSH(documents, 2000)
-minhash.perform_lsh()      
+# documents = []
+#
+# with open('../IMDB_crawled.json', 'r') as f:
+#     crawled_json = f.read()
+# crawled = json.loads(crawled_json)
+# for movie in crawled:
+#     sums = ''
+#     if movie['summaries'] == None:
+#         continue
+#     for summary in movie['summaries']:
+#         sums += summary + ' '
+#     documents.append(sums.strip())
+# with open('LSHFakeData.json', 'r') as f:
+#     dups = f.read()
+# lsh_fake = json.loads(dups)
+# for movie in lsh_fake:
+#     sums = ''
+#     for summary in movie['summaries']:
+#         sums += summary + ' '
+#     documents.append(sums.strip())
+#
+# minhash = MinHashLSH(documents, 2000)
+# minhash.perform_lsh()

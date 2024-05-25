@@ -2,8 +2,8 @@ import time
 import os
 import json
 import copy
-from Logic.core.preprocess import Preprocessor
-from indexes_enum import Indexes
+from Logic.core.utility.preprocess import Preprocessor
+from Logic.core.indexer.indexes_enum import Indexes
 
 
 class Index:
@@ -366,22 +366,23 @@ class Index:
 
 
 # TODO: Run the class with needed parameters, then run check methods and finally report the results of check methods
-with open('../IMDB_crawled.json', 'r') as f:
-    json_data = f.read()
-crawled_movies = json.loads(json_data)
-for movie in crawled_movies:
-    for item in ['stars', 'genres', 'summaries']:
-        movie[item] = Preprocessor(movie[item]).preprocess()
-
-index = Index(crawled_movies)
-for item in ['documents', 'stars', 'genres', 'summaries']:
-    print(item, ": ")
-    index.check_if_indexing_is_good(item)
-for item in ['documents', 'stars', 'genres', 'summaries']:
-    path = 'index/' + item + '_index.json'
-    index.store_index(path, item)
-
-for item in ['documents', 'stars', 'genres', 'summaries']:
-    path = 'index/' + item + '_index.json'
-    index.load_index(path)
-    print(index.check_if_index_loaded_correctly(item, index.index[item]))
+#
+# with open('../IMDB_crawled.json', 'r') as f:
+#     json_data = f.read()
+# crawled_movies = json.loads(json_data)
+# for movie in crawled_movies:
+#     for item in ['stars', 'genres', 'summaries']:
+#         movie[item] = Preprocessor(movie[item]).preprocess()
+#
+# index = Index(crawled_movies)
+# for item in ['documents', 'stars', 'genres', 'summaries']:
+#     print(item, ": ")
+#     index.check_if_indexing_is_good(item)
+# for item in ['documents', 'stars', 'genres', 'summaries']:
+#     path = 'index/' + item + '_index.json'
+#     index.store_index(path, item)
+#
+# for item in ['documents', 'stars', 'genres', 'summaries']:
+#     path = 'index/' + item + '_index.json'
+#     index.load_index(path)
+#     print(index.check_if_index_loaded_correctly(item, index.index[item]))
