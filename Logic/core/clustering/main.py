@@ -16,13 +16,13 @@ from Logic.core.clustering.clustering_utils import ClusteringUtils
 # 0. Embedding Extraction
 # TODO: Using the previous preprocessor and fasttext model, collect all the embeddings of our data and store them.
 if __name__ == '__main__':
-    wandb.login(key="cf8f770ff96961e57f79aef03b3e2eb5700dfc17")
+    #wandb.login(key="")
     ft_model = FastText(method='skipgram')
     ft_model.prepare(None, mode="load")
     ft_data_loader = FastTextDataLoader("/index")
     X, y = ft_data_loader.create_train_data()
-    X = X[0:200]
-    y = y[0:200]
+    X = X[0:100]
+    y = y[0:100]
     X_emb = np.array([ft_model.get_query_embedding(text) for text in tqdm(X)])
 
     # 1. Dimension Reduction
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     #     - Draw plots to visualize the results.
     dimred = DimensionReduction()
     X = dimred.pca_reduce_dimension(X_emb, 50)
-    dimred.wandb_plot_explained_variance_by_components(X_emb, "IMDB", "1")
+    dimred.wandb_plot_explained_variance_by_components(X_emb, "IMDB", "2")
 
     # TODO: Implement t-SNE (t-Distributed Stochastic Neighbor Embedding):
     #     - Create the convert_to_2d_tsne function, which takes a list of embedding vectors as input and reduces the dimensionality to two dimensions using the t-SNE method.
@@ -69,9 +69,9 @@ if __name__ == '__main__':
 
     # 3. Evaluation
     # TODO: Using clustering metrics, evaluate how well your clustering method is performing.
-    cu.visualize_elbow_method_wcss(X, [2 * i for i in range(1, 20)], "IMDB", "6")
+    cu.visualize_elbow_method_wcss(X, [2 * i for i in range(1, 15)], "IMDB", "6")
     cm = ClusteringMetrics()
-    for k in range(2, 100, 4):
+    for k in range(2, 20, 4):
         centeroids,cluster_assignments = cu.cluster_kmeans(X, k)
         label = cu.fix_labels(cluster_assignments, k, y)
         print(
