@@ -288,8 +288,6 @@ class ClusteringUtils:
             # and visualize it.
             silhouette_scores.append(cm.silhouette_score(embeddings, cluster_assignments))
             # count labels in each cluster
-            cluster_assignments = self.fix_labels(cluster_assignments, k, true_labels)
-
             purity_scores.append(cm.purity_score(true_labels, cluster_assignments))
 
         # Plotting the scores
@@ -312,17 +310,6 @@ class ClusteringUtils:
             run = wandb.init(project=project_name, name=run_name)
             wandb.log({"Cluster Scores": wandb.Image(fig)})
 
-    def fix_labels(self, cluster_assignments, k, true_labels):
-        counters = []
-        for i in range(k):
-            counters.append(Counter())
-        for i in range(len(cluster_assignments)):
-            counters[cluster_assignments[i]].update([true_labels[i]])
-        ci_to_label = {}
-        for i in range(k):
-            ci_to_label[i] = counters[i].most_common(1)[0][0]
-        cluster_assignments = [ci_to_label[i] for i in cluster_assignments]
-        return cluster_assignments
 
     def visualize_elbow_method_wcss(self, embeddings: List, k_values: List[int], project_name: str, run_name: str):
         """ This function implements the elbow method to determine the optimal number of clusters for K-means clustering based on the Within-Cluster Sum of Squares (WCSS).

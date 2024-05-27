@@ -73,6 +73,5 @@ if __name__ == '__main__':
     cm = ClusteringMetrics()
     for k in range(2, 20, 4):
         centeroids,cluster_assignments = cu.cluster_kmeans(X, k)
-        label = cu.fix_labels(cluster_assignments, k, y)
         print(
-            f"{k}:  ari: {cm.adjusted_rand_score(y, cluster_assignments)} , purity: {cm.purity_score(y, label)} , silhouette: {cm.silhouette_score(X, cluster_assignments)}")
+            f"{k}:  ari: {cm.adjusted_rand_score(y, cluster_assignments)} , purity: {cm.purity_score(y, cluster_assignments)} , silhouette: {cm.silhouette_score(X, cluster_assignments)}")
