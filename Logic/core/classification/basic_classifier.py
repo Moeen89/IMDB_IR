@@ -6,8 +6,9 @@ from ..word_embedding.fasttext_model import FastText
 
 
 class BasicClassifier:
-    def __init__(self):
-        pass
+    def __init__(self, n_components=50):
+        self.pca = sklearn.decomposition.PCA(n_components=n_components)
+
 
     def fit(self, x, y):
         pass
@@ -30,5 +31,15 @@ class BasicClassifier:
         float
             The percentage of positive reviews
         """
-        pass
+        positive_reviews = 0
+        ft_model = FastText(method='skipgram')
+        ft_model.prepare(None,mode="load")
+
+        for sentence in sentences:
+            emb = ft_model.get_query_embedding(sentence)   
+            emb = self.pca.transform([emb])
+            if self.predict([emb]) == 1:
+                positive_reviews += 1
+        return positive_reviews / len(sentences)
+       
 

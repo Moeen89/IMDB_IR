@@ -60,7 +60,6 @@ class DeepModelClassifier(BasicClassifier):
             The batch size of dataloader
         """
         super().__init__()
-        self.pca = sklearn.decomposition.PCA(n_components=50)
         self.test_loader = None
         self.in_features = in_features
         self.num_classes = num_classes
@@ -214,7 +213,6 @@ if __name__ == '__main__':
     x_train, x_test, y_train, y_test = loader.split_data(test_data_ratio=0.2)
     x_train = model.pca.fit_transform(x_train)
     x_test = model.pca.transform(x_test)
-
     model.set_test_dataloader(x_test, y_test)
     model.fit(x_train, y_train)
     print(model.prediction_report(x_test, y_test))

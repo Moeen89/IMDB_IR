@@ -9,9 +9,7 @@ from Logic.core.classification.data_loader import ReviewLoader
 
 class KnnClassifier(BasicClassifier):
     def __init__(self, n_neighbors):
-        super().__init__()
-        self.pca = sklearn.decomposition.PCA(n_components=100)
-
+        super().__init__(n_components=100)
         self.k = n_neighbors
         self.x = None
         self.y = None

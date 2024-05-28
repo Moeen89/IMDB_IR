@@ -9,7 +9,6 @@ from Logic.core.classification.data_loader import ReviewLoader
 
 class SVMClassifier(BasicClassifier):
     def __init__(self):
-        self.pca = sklearn.decomposition.PCA(n_components=100)
         self.model = SVC()
 
     def fit(self, x, y):

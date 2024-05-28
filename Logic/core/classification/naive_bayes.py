@@ -86,6 +86,12 @@ class NaiveBayes(BasicClassifier):
         """
         You have to override this method because we are using a different embedding method in this class.
         """
+        positive_reviews = 0
+        for sentence in sentences:
+            emb = self.cv.transform([sentence])
+            if self.predict(emb) == 1:
+                positive_reviews += 1
+
         
 
         
