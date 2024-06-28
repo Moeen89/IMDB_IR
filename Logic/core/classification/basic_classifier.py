@@ -1,14 +1,12 @@
 import numpy as np
-import sklearn
 from tqdm import tqdm
 
 from ..word_embedding.fasttext_model import FastText
 
 
 class BasicClassifier:
-    def __init__(self, n_components=50):
-        self.pca = sklearn.decomposition.PCA(n_components=n_components)
-
+    def __init__(self):
+        raise NotImplementedError()
 
     def fit(self, x, y):
         pass
@@ -36,10 +34,10 @@ class BasicClassifier:
         ft_model.prepare(None,mode="load")
 
         for sentence in sentences:
-            emb = ft_model.get_query_embedding(sentence)   
+            emb = ft_model.get_query_embedding(sentence)
             emb = self.pca.transform([emb])
             if self.predict([emb]) == 1:
                 positive_reviews += 1
         return positive_reviews / len(sentences)
-       
+
 

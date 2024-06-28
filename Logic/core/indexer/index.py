@@ -107,9 +107,9 @@ class Index:
                         current_index[word] = {}
                     if document['id'] not in current_index[word]:
                         current_index[word][document['id']] = 0
-                    current_index[word][document['id']] += 1    
+                    current_index[word][document['id']] += 1
 
-                
+
         return current_index
 
     def get_posting_list(self, word: str, index_type: str):
@@ -237,6 +237,14 @@ class Index:
                 != {dummy_document['id']}):
             print('Add is incorrect, good')
             return
+
+        # Change the index_before_remove to its initial form if needed
+
+        self.delete_dummy_keys(index_before_add, Indexes.STARS.value, 'tim')
+        self.delete_dummy_keys(index_before_add, Indexes.STARS.value, 'henry')
+        self.delete_dummy_keys(index_before_add, Indexes.GENRES.value, 'drama')
+        self.delete_dummy_keys(index_before_add, Indexes.GENRES.value, 'crime')
+        self.delete_dummy_keys(index_before_add, Indexes.SUMMARIES.value, 'good')
 
         print('Add is correct')
 
