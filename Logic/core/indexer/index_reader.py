@@ -33,7 +33,7 @@ class Index_reader:
         dict
             The index.
         """
-        absolute_path = "../Logic/core/indexer" + self.path + "/" + self.index_name.value
+        absolute_path = "../Logic/core/indexer/index/" +  self.index_name.value
 
         if self.index_type != None:
             absolute_path = absolute_path + "_" + self.index_type.value
